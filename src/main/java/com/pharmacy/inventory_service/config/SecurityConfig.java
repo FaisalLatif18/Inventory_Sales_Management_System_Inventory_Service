@@ -1,4 +1,4 @@
-package main.java.com.pharmacy.inventory_service.config;
+package com.pharmacy.inventory_service.config;
 
 import com.pharmacy.inventory_service.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;

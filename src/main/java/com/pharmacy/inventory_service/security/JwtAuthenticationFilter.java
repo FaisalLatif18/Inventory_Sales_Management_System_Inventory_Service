@@ -1,4 +1,4 @@
-package main.java.com.pharmacy.inventory_service.security;
+package com.pharmacy.inventory_service.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

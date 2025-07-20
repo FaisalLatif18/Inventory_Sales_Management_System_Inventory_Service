@@ -1,4 +1,4 @@
-package main.java.com.pharmacy.inventory_service.entity;
+package com.pharmacy.inventory_service.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

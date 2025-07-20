@@ -1,4 +1,4 @@
-package main.java.com.pharmacy.inventory_service.repository;
+package com.pharmacy.inventory_service.repository;
 
 import com.pharmacy.inventory_service.entity.InventoryItem;
 import org.springframework.data.jpa.repository.JpaRepository;

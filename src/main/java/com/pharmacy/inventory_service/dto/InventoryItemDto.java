@@ -1,4 +1,4 @@
-package main.java.com.pharmacy.inventory_service.dto;
+package com.pharmacy.inventory_service.dto;
 
 import lombok.*;
 import jakarta.validation.constraints.Min;
