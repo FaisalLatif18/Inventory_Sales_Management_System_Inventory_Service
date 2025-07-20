@@ -1,0 +1,2 @@
+# Inventory_Sales_Management_System_Inventory_Service
+Inventory-Service using Springboot Microservices
