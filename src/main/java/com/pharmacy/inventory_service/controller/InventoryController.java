@@ -19,21 +19,18 @@ public class InventoryController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<InventoryItem> addOrUpdateInventory(@Valid @RequestBody InventoryItemDto dto) {
-        InventoryItem savedItem = inventoryService.addOrUpdateInventory(dto);
-        return ResponseEntity.ok(savedItem);
+        return inventoryService.addOrUpdateInventory(dto);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'PHARMACIST')")
     @GetMapping("/{productId}")
-    public ResponseEntity<InventoryItem> getInventoryByProductId(@PathVariable Long productId) {
-        InventoryItem item = inventoryService.getInventoryByProductId(productId);
-        return ResponseEntity.ok(item);
+    public ResponseEntity<?> getInventoryByProductId(@PathVariable Long productId) {
+        return inventoryService.getInventoryByProductId(productId);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{productId}")
-    public ResponseEntity<String> deleteInventory(@PathVariable Long productId) {
-        inventoryService.deleteInventory(productId);
-        return ResponseEntity.ok("Inventory deleted successfully.");
+    public ResponseEntity<?> deleteInventory(@PathVariable Long productId) {
+        return inventoryService.deleteInventory(productId);
     }
 }
