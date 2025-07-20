@@ -1,33 +1,43 @@
 package com.pharmacy.inventory_service.service;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import io.github.resilience4j.retry.annotation.Retry;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 import com.pharmacy.inventory_service.dto.InventoryItemDto;
 import com.pharmacy.inventory_service.dto.ProductDto;
 import com.pharmacy.inventory_service.entity.InventoryItem;
 import com.pharmacy.inventory_service.repository.InventoryItemRepository;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
-
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
-
 @Service
-@RequiredArgsConstructor
 public class InventoryService {
 
     private final InventoryItemRepository repository;
     private final RestTemplate restTemplate;
+    private final HttpServletRequest request;
 
     @Value("${product.service.url:http://localhost:8082/api/products/}")
     private String productServiceUrl;
+
+    @Autowired
+    public InventoryService(InventoryItemRepository repository, RestTemplate restTemplate, HttpServletRequest request) {
+        this.repository = repository;
+        this.restTemplate = restTemplate;
+        this.request = request;
+    }
 
     public ResponseEntity<InventoryItem> addOrUpdateInventory(InventoryItemDto dto) {
         if (!validateProduct(dto.getProductId())) {
@@ -70,14 +80,20 @@ public class InventoryService {
     @CircuitBreaker(name = "productServiceCircuitBreaker", fallbackMethod = "productValidationFallback")
     public boolean validateProduct(Long productId) {
         String url = productServiceUrl + productId;
-        ResponseEntity<ProductDto> response = restTemplate.getForEntity(url, ProductDto.class);
-        return response.getStatusCode() == HttpStatus.OK && response.getBody() != null;
+
+        String token = request.getHeader("Authorization"); // Bearer <token>
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", token);
+
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+        ResponseEntity<ProductDto> response = restTemplate.exchange(url, HttpMethod.GET, entity, ProductDto.class);
+
+        return response.getStatusCode().is2xxSuccessful() && response.getBody() != null;
     }
 
-    // Fallback returns false and logs the reason
     public boolean productValidationFallback(Long productId, Throwable t) {
-        System.err.println(
-                "Fallback triggered for product validation (Product ID: " + productId + "). Reason: " + t.getMessage());
+        System.err
+                .println("Fallback for product validation (Product ID: " + productId + "). Reason: " + t.getMessage());
         return false;
     }
 }
